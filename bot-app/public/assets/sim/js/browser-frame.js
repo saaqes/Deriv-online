@@ -271,6 +271,22 @@
     var appHeaderH = measuredHeaderH > MIN_HEADER_HEIGHT ? measuredHeaderH : MIN_HEADER_HEIGHT;
     root.style.setProperty('--app-header-height', appHeaderH + 'px');
 
+    // LÍMITE EXACTO: borde inferior REAL del header del saldo, medido
+    // desde el borde superior de la pantalla. Ya incluye la barra
+    // Chrome (si está activa) y el notch, porque es la posición real
+    // donde termina el header en pantalla. Ningún panel (Transactions /
+    // Summary / Journal, capa de Run) puede subir más allá de esta
+    // línea: así el header del saldo SIEMPRE queda visible, debajo de
+    // la barra del navegador y encima de todo lo demás.
+    var headerBottom = 0;
+    if (appHeader && measuredHeaderH > 0) {
+      headerBottom = appHeader.getBoundingClientRect().bottom;
+    }
+    // Sin header (todavía montándose) → respaldo: barra + alto mínimo.
+    var minBottom = topH + (appHeader && measuredHeaderH > 0 ? measuredHeaderH : MIN_HEADER_HEIGHT);
+    if (headerBottom < minBottom) headerBottom = minBottom;
+    root.style.setProperty('--app-header-bottom', Math.round(headerBottom) + 'px');
+
     // Altura real del drawer (.dc-drawer, ver drawer.scss) — cambia
     // entre cerrado (solo la flecha, 3.6rem) y abierto (crece hacia
     // abajo). El área del gráfico/Volatility usa esto para reservar
@@ -279,6 +295,40 @@
     var drawerEl = document.querySelector('.dc-drawer');
     var drawerH = drawerEl ? drawerEl.getBoundingClientRect().height : 0;
     root.style.setProperty('--drawer-toggle-height', drawerH + 'px');
+  }
+
+  /** App React (index.html) con marco activo: la página NUNCA debe
+   * desplazarse como documento completo. Si se desplaza (p.ej. el
+   * navegador restaura la posición de scroll al recargar, o un
+   * elemento sobresale unos px), el header del saldo sube y queda
+   * escondido DETRÁS de la barra Chrome (que es fixed y siempre está
+   * arriba). Se bloquea el scroll del documento y se vuelve a 0;
+   * el scroll interno de cada panel de la app sigue funcionando
+   * igual. home.html / options.html (bf-static-page) sí necesitan
+   * desplazarse, así que ahí no se bloquea nada. */
+  function shouldLockScroll() {
+    var body = document.body;
+    return body.classList.contains('bf-active') && !body.classList.contains('bf-static-page');
+  }
+
+  function resetDocumentScroll() {
+    if (!shouldLockScroll()) return;
+    if (window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0);
+    if (document.documentElement.scrollTop) document.documentElement.scrollTop = 0;
+    if (document.body.scrollTop) document.body.scrollTop = 0;
+  }
+
+  function updateScrollLock() {
+    var lock = shouldLockScroll();
+    root.classList.toggle('bf-lock-scroll', lock);
+    try {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = lock ? 'manual' : 'auto';
+      }
+    } catch (err) {
+      /* no crítico */
+    }
+    resetDocumentScroll();
   }
 
   function apply(mode) {
@@ -290,6 +340,7 @@
     if (existingBottom) existingBottom.remove();
 
     body.classList.remove('bf-active', 'bf-chrome', 'bf-safari');
+    root.classList.remove('bf-lock-scroll');
 
     if (mode === 'none') {
       // Sin marco: no se agrega ninguna clase ni barra, así que
@@ -316,6 +367,7 @@
     }
 
     wireEditableHost();
+    updateScrollLock();
 
     // Medir de inmediato (getBoundingClientRect fuerza un reflow síncrono
     // con el valor ya correcto) — así no hay ni un frame de solapamiento
@@ -456,6 +508,7 @@
     root.style.setProperty('--browser-frame-top-height', '0px');
     root.style.setProperty('--browser-frame-bottom-height', '0px');
     root.style.setProperty('--app-header-height', '72px');
+    root.style.setProperty('--app-header-bottom', '72px');
     applyPwaClass();
     apply(getMode());
 
@@ -464,6 +517,24 @@
     // (barra de direcciones móvil) y el viewport visual cambia de alto.
     window.addEventListener('resize', handleViewportChange);
     window.addEventListener('orientationchange', handleViewportChange);
+
+    // Al recargar con el marco ya activo, el navegador puede restaurar
+    // una posición de scroll vieja DESPUÉS de este script (y React monta
+    // el header más tarde). Se vuelve a 0 y se re-mide en cada uno de
+    // esos momentos, y ante cualquier intento de desplazar el documento.
+    window.addEventListener('scroll', function () {
+      if (!shouldLockScroll()) return;
+      resetDocumentScroll();
+      handleViewportChange();
+    }, { passive: true });
+    window.addEventListener('load', function () {
+      resetDocumentScroll();
+      measureAndSetVars();
+    });
+    window.addEventListener('pageshow', function () {
+      resetDocumentScroll();
+      measureAndSetVars();
+    });
 
     // Navegación por posición dentro de .mobile-bottom-nav: el mismo
     // orden que usa hash=['dashboard','bot_builder','chart',...] en
