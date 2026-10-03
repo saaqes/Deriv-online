@@ -209,8 +209,24 @@
             // que realmente le queda disponible — lo suficiente para que
             // su borde superior terminara metiéndose encima del header.
             // Ahora también se descuenta la altura de la barra simulada.
-            height: calc(100vh - var(--browser-frame-top-height, 0px) - var(--app-header-height, 9rem) - 10rem) !important;
-            height: calc(100dvh - var(--browser-frame-top-height, 0px) - var(--app-header-height, 9rem) - 10rem) !important;
+            //
+            // LÍMITE EXACTO (Chrome / Ninguno): la caja está anclada en
+            // bottom:12rem, así que su alto máximo es todo el espacio
+            // entre ese borde y el borde inferior REAL del header del
+            // saldo (--app-header-bottom, medido en vivo por
+            // browser-frame.js; ya incluye la barra Chrome y el notch).
+            // Resultado: al abrir Transactions/Summary/Journal el
+            // contenido llega justo hasta debajo del saldo y se detiene
+            // ahí — nunca lo tapa, ni con la barra Chrome activa, ni
+            // después de recargar. Modo Safari: ver browser-frame.css.
+            height: max(
+                3.6rem,
+                calc(100vh - 12rem - var(--app-header-bottom, calc(var(--browser-frame-top-height, 0px) + 9rem)))
+            ) !important;
+            height: max(
+                3.6rem,
+                calc(100dvh - 12rem - var(--app-header-bottom, calc(var(--browser-frame-top-height, 0px) + 9rem)))
+            ) !important;
         }
     }
 }
