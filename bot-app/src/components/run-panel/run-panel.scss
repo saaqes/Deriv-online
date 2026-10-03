@@ -36,12 +36,18 @@
             // altura real de la barra (--browser-frame-top-height, 0px
             // si no hay marco activo) para que el tope respete siempre
             // el header completo, con o sin marco Chrome.
-            top: calc(var(--browser-frame-top-height, 0px) + var(--app-header-height, 8rem));
+            // Ahora usa directamente el borde inferior REAL del header
+            // (--app-header-bottom = barra Chrome + notch + header,
+            // medido en vivo), así esta capa empieza exactamente donde
+            // termina el saldo.
+            top: var(--app-header-bottom, calc(var(--browser-frame-top-height, 0px) + var(--app-header-height, 8rem)));
             left: 0;
             width: 100vw;
             z-index: var(--zindex-drawer);
             height: calc(
-                100% - var(--browser-frame-top-height, 0px) - var(--app-header-height, 8rem) - env(safe-area-inset-bottom, 0)
+                100% -
+                    var(--app-header-bottom, calc(var(--browser-frame-top-height, 0px) + var(--app-header-height, 8rem))) -
+                    env(safe-area-inset-bottom, 0)
             );
             padding-bottom: env(safe-area-inset-bottom, 0);
 
