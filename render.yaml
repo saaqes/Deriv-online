@@ -18,7 +18,9 @@ services:
     runtime: node
     plan: free
     rootDir: bot-app
-    buildCommand: npm install && npm run build
+    # --include=dev: con NODE_ENV=production npm omite las devDependencies
+    # (rsbuild es devDependency; sin esto la build falla con "rsbuild: not found").
+    buildCommand: npm install --include=dev && npm run build
     startCommand: node server.js
     envVars:
       - key: NODE_VERSION
