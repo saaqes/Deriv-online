@@ -28,6 +28,17 @@ body.bf-active{
   padding-bottom: max(var(--browser-frame-bottom-height), env(safe-area-inset-bottom));
 }
 
+/* App React con marco activo (browser-frame.js agrega
+   html.bf-lock-scroll): el documento NO se desplaza nunca. Si se
+   desplazara, el header del saldo subiría y quedaría escondido detrás
+   de la barra Chrome. Los paneles internos de la app conservan su
+   propio scroll. No aplica a home.html/options.html. */
+html.bf-lock-scroll,
+html.bf-lock-scroll body{
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
 /* .header-top (home.html) es la barra fija con avatar/notificaciones,
    también position:fixed;top:0 — debe respetar como mínimo el notch/
    Dynamic Island siempre (con o sin barra Chrome visible encima). */
@@ -142,6 +153,14 @@ body.bf-safari .run-panel-tab__content--mobile{
 @media (max-width: 1279px){
   body.bf-safari .dc-drawer{
     bottom: calc(6rem + var(--browser-frame-bottom-height)) !important;
+  }
+  /* Abierto en modo Safari: su borde inferior está más arriba
+     (6rem + barra Safari), así que el alto máximo se calcula desde ahí
+     hasta el borde inferior REAL del header del saldo
+     (--app-header-bottom) — nunca lo tapa. */
+  body.bf-safari .dc-drawer.dc-drawer--open{
+    height: max(3.6rem, calc(100vh - 6rem - var(--browser-frame-bottom-height) - var(--app-header-bottom))) !important;
+    height: max(3.6rem, calc(100dvh - 6rem - var(--browser-frame-bottom-height) - var(--app-header-bottom))) !important;
   }
 }
 
