@@ -5,6 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { getContractTypeDisplay } from '@/constants/contract';
 import { useStore } from '@/hooks/useStore';
 import { getSymbolDisplayNameSync } from '@/utils/symbol-display-name';
+import { Localize } from '@deriv-com/translations';
 import { useDevice } from '@deriv-com/ui';
 import ContractCardLoader from '../contract-card-loading';
 import { getCardLabels } from '../shared';
@@ -88,6 +89,16 @@ const SummaryCard = observer(({ contract_info, is_contract_loading, is_bot_runni
             })}
             data-testid='dt_mock_summary_card'
         >
+            {/* Estado vacío (sin contratos todavía): texto centrado en la
+                mitad del panel Summary, igual que el Deriv Bot original. */}
+            {!is_contract_loading && !contract_info && !is_bot_running && (
+                <div className='db-summary-card__placeholder' data-testid='dt_summary_placeholder'>
+                    <Localize
+                        i18n_default_text='When you’re ready to trade, hit <0>Run</0>. You’ll be able to track your bot’s performance here.'
+                        components={[<strong key={0} />]}
+                    />
+                </div>
+            )}
             {is_contract_loading && !is_bot_running && <ContractCardLoader speed={2} />}
             {is_bot_running && <ContractCardLoader speed={2} contract_stage={contract_stage} />}
             {!is_contract_loading && contract_info && !is_bot_running && (
