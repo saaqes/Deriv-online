@@ -102,16 +102,22 @@ const TradeAnimation = observer(({ className, should_show_overlay }: TTradeAnima
     const has_no_bots = !has_active_bot && !has_saved_bots;
     const is_bot_builder_tab = active_tab === DBOT_TABS.BOT_BUILDER;
 
-    // Disable the RUN button if:
-    // 1. There are no active or saved bots AND the user is not in the bot builder tab
-    const should_disable_run = has_no_bots && !is_bot_builder_tab;
+    // El botón Run queda SIEMPRE activo, también la primera vez que se
+    // entra (antes se deshabilitaba cuando todavía no había bots
+    // guardados: has_active_bot se calculaba antes de que existiera el
+    // workspace de Blockly y se quedaba en "false", así que Run aparecía
+    // gris con el ícono (i) aunque sí hubiera un bot cargado). Solo se
+    // bloquea un instante después de cada click (shouldDisable, evita
+    // doble click) y mientras el contrato se está comprando (stage 3).
+    const should_disable_run = false;
 
     const is_disabled = is_stop_button_visible ? false : shouldDisable || should_disable_run;
 
     // Show the tooltip when:
     // 1. The user is NOT in the bot builder tab, AND
     // 2. There are no bots
-    const should_show_tooltip = !is_stop_button_visible && !is_bot_builder_tab && has_no_bots;
+    // Ya no se muestra el aviso "Run deshabilitado" (ver arriba).
+    const should_show_tooltip = false;
 
     const button_props = React.useMemo(() => {
         if (is_stop_button_visible && !is_stop_button_disabled) {
