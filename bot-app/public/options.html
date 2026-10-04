@@ -10,15 +10,16 @@
 <meta name="theme-color" content="#2c2c2e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Deriv Bot">
+<meta name="apple-mobile-web-app-title" content="TradeLab">
 <!-- Acelera la navegación hacia el bot-app (pestaña Chart): ver home.html. -->
 <link rel="preconnect" href="https://api.derivws.com" crossorigin>
 <link rel="dns-prefetch" href="https://api.derivws.com">
 <link rel="preconnect" href="https://auth.deriv.com">
 <link rel="dns-prefetch" href="https://auth.deriv.com">
 <link rel="prefetch" href="/">
+<script src="https://kit.fontawesome.com/69112f3248.js" crossorigin="anonymous"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Deriv</title>
+<title>TradeLab</title>
 <style>
   :root{
     --bg: #181c25;
@@ -49,7 +50,7 @@
     margin:0 auto;
     background:#ffffff;
     position:relative;
-    padding-bottom: calc(70px + var(--sab));
+    padding-bottom: calc(90px + var(--sab));
   }
 
   /* ---- Dark header card ---- */
@@ -72,17 +73,43 @@
   .toggle{ background:#fdfdfd0a; border-radius:20px; display:flex; padding:3px; width:180px; }
   .toggle button{ flex:1; border:none; background:transparent; color:var(--text-dim); font-size:13px; font-weight:600; padding:7px 0; border-radius:16px; }
   .toggle button.active{ background:#fcfcfc23; color:#fff; }
-  .icon-btn{ position:absolute; right:16px; top:calc(16px + var(--sat)); display:flex; align-items:center; gap:14px; color:#e6e6e6; }
-  .icon-btn .bell-wrap{ position:relative; display:flex; }
-  .icon-btn .badge-count{
-    position:absolute; top:-6px; right:-7px;
-    background:var(--red); color:#fff;
-    font-size:9px; font-weight:700;
-    min-width:15px; height:15px; border-radius:8px;
-    display:flex; align-items:center; justify-content:center;
-    border:1.5px solid var(--bg);
-    padding:0 2px;
+  /* Ojo y campana: mismo estilo que home.html */
+  .header-icons{ position:absolute; right:16px; top:calc(12px + var(--sat)); display:flex; align-items:center; gap:16px; color:#ffffff; }
+  .icon-btn{
+    position:relative;
+    width:20px;
+    height:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(255,255,255,0.12);
+    border-radius:50%;
+    padding:15px;
+    cursor:pointer;
+    color:#ffffff;
+    transition:box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
   }
+  .icon-btn:hover{
+    background:rgba(255,255,255,0.2);
+    box-shadow:0 4px 12px rgba(0,0,0,0.35);
+    transform:translateY(-1px);
+  }
+  .badge{
+    position:absolute;
+    top:-4px;
+    right:-4px;
+    background:var(--red);
+    color:#fff;
+    font-size:9px;
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+  }
+  .balance-amount.is-hidden .amount-text{ letter-spacing:2px; }
 
   /* ---- Balance ---- */
   .balance{ padding: 10px 20px 18px; }
@@ -103,23 +130,134 @@
   .section-title.gold{ color:#000000; }
   .view-all{ color:#c78a00; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; }
 
-  /* ---- Market cards grid ---- */
-  .market-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; padding: 0 16px 6px; }
-  .market-card{ background:rgb(242, 241, 241); border-radius:14px; padding:12px 12px 10px; min-height:112px; display:flex; flex-direction:column; justify-content:space-between; }
-  .market-card.viewall-card{ display:flex; align-items:center; justify-content:center; gap:6px; color:var(--yellow); font-weight:600; font-size:13px; }
-  .market-icon-row{ display:flex; align-items:center; gap:6px; margin-bottom:2px; }
-  .badge{ width:16px;height:16px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center; font-size:8px; color:#fff; font-weight:800; }
-  .badge.blue{ background:linear-gradient(135deg,#4ba3ff,#1c5fd6); }
-  .badge.purple{ background:linear-gradient(135deg,#b06bff,#6a2fc9); }
-  .mini-bars{ display:flex; align-items:flex-end; gap:2px; height:12px; }
-  .mini-bars span{ width:2.5px; background:#4ba3ff; border-radius:1px; display:block; }
-  .market-name{ font-size:12px; color:#d6d6d6; margin-bottom:4px; }
-  .market-price{ font-size:16px; font-weight:700; margin-bottom:2px; font-variant-numeric: tabular-nums; }
-  .sparkline{ height:28px; margin: 2px 0 2px; width:100%; display:block; }
-  .market-change{ font-size:11px; font-weight:600; }
-  .market-change.down{ color:var(--pink-loss); }
-  .market-change.up{ color:var(--green); }
-  .market-change .tf{ color:var(--text-dim); font-weight:400; margin-left:2px;}
+  /* ---- Market cards ---- */
+  .market-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    padding:0 16px 6px;
+  }
+  .market-card{
+    position:relative;
+    width:100%;
+    min-height:170px;
+    border:0;
+    border-radius:16px;
+    background:rgba(0,0,0,.04);
+    padding:16px;
+    text-align:left;
+    color:#414652;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    gap:16px;
+    transition:background .15s ease;
+    cursor:pointer;
+  }
+  .market-card:hover{ background:rgba(0,0,0,.08); }
+  .market-card.viewall-card{
+    min-height:170px;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    padding:16px 8px;
+    color:#414652;
+    font-weight:400;
+    font-size:12px;
+    text-align:center;
+  }
+  .market-icon-row{
+    display:flex;
+    align-items:flex-start;
+    gap:0;
+    margin:0;
+    min-height:32px;
+  }
+  .market-icon{
+    width:32px;
+    height:32px;
+    flex:0 0 32px;
+    display:block;
+  }
+  .market-info{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    width:100%;
+    min-width:0;
+  }
+  .market-name{
+    font-size:14px;
+    line-height:20px;
+    color:#414652;
+    min-height:40px;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .market-price{
+    font-size:18px;
+    line-height:28px;
+    font-weight:700;
+    color:#17191e;
+    margin:0;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .market-bottom{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    width:100%;
+    min-width:0;
+  }
+  .sparkline{
+    height:32px;
+    flex:1;
+    min-width:0;
+    width:auto;
+    display:block;
+    overflow:hidden;
+  }
+  .market-change{
+    display:flex;
+    align-items:center;
+    gap:2px;
+    flex:0 0 auto;
+    font-size:14px;
+    font-weight:400;
+    white-space:nowrap;
+  }
+  .market-change.down{ color:#de0040; }
+  .market-change.up{ color:#00875a; }
+  .market-change .tf{
+    color:#737782;
+    font-weight:400;
+    margin-left:0;
+  }
+  .viewall-icon{
+    width:48px;
+    height:48px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:0;
+  }
+  .viewall-icon svg{
+    width:32px;
+    height:32px;
+    fill:currentColor;
+  }
+  @media (max-width:420px){
+    .market-grid{ gap:8px; }
+    .market-card{ padding:14px; min-height:164px; }
+    .market-name{ font-size:13px; }
+    .market-price{ font-size:17px; }
+    .market-change{ font-size:13px; }
+  }
 
   /* ---- Featured banner ---- */
   .featured-card{ margin:6px 16px 4px; background:linear-gradient(180deg,#151515,#0a0a0a); border-radius:16px; overflow:hidden; border:1px solid #1f1f1f; }
@@ -143,12 +281,12 @@
   .dots span.active{ background:var(--yellow); width:14px; border-radius:3px; }
 
   /* ---- Platforms ---- */
-  .platform-card{ display:flex; align-items:center; gap:12px; background:var(--card); border-radius:14px; padding:14px; margin-bottom:10px; }
-  .platform-logo{ width:44px;height:44px; border-radius:12px; background:var(--red); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; flex-shrink:0; }
+  .platform-card{ display:flex; align-items:center; gap:12px; background:#f1f3f5; border-radius:14px; padding:24px; margin-bottom:10px; }
+  .platform-logo{ width:54px;height:54px; border-radius:12px; background:var(--red); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:500; font-size:24px; flex-shrink:0; }
   .platform-logo.db{ background:#e6303f; }
   .platform-logo.st{ background:#2b2f77; }
-  .platform-name{ font-size:14px; font-weight:700; margin-bottom:2px; }
-  .platform-desc{ font-size:12px; color:var(--text-dim); line-height:1.35; }
+  .platform-name{ font-size:15px; font-weight:700; margin-bottom:2px; }
+  .platform-desc{ font-size:15px; color:#595959; line-height:1.35; }
 
   /* ---- Trade types ---- */
   .pill-row{ display:flex; gap:8px; padding: 4px 16px 14px; overflow-x:auto; scrollbar-width:none;}
@@ -156,7 +294,7 @@
   .pill{ background:var(--card); border-radius:20px; padding:8px 16px; font-size:13px; color:var(--text-dim); font-weight:600; flex-shrink:0; }
   .pill.active{ background:#fff; color:#000; }
   .trade-type-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; padding:0 16px 20px; }
-  .trade-type{ background:var(--card); border-radius:14px; aspect-ratio:1/0.95; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; font-size:11.5px; color:#e2e2e2; text-align:center; padding:8px; }
+  .trade-type{ background:#f1f3f5; border-radius:14px; aspect-ratio:1/0.95; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; font-size:11.5px; color:black; text-align:center; padding:8px; }
   .tt-icon{ font-size:20px; line-height:1; }
   .tt-icon.red{ color:var(--red); }
   .tt-icon.green{ color:var(--green); }
@@ -164,10 +302,44 @@
   .tt-icon.mixed span:last-child{ color:var(--red); }
 
   /* ---- Bottom nav ---- */
-  .bottom-nav{ position:fixed; bottom:0; left:0; right:0; background:#0e0e0e; border-top:1px solid #1f1f1f; display:flex; justify-content:space-around; padding:10px 0 calc(10px + var(--sab)); max-width:600px; margin:0 auto; z-index:1000; }
-  .nav-item{ display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10.5px; color:#8a8a8a; }
+  /* Menú inferior: mismo estilo que home.html */
+  .bottom-nav{
+    position:fixed;
+    bottom:0;
+    left:50%;
+    transform:translateX(-50%);
+    width:100%;
+    max-width:480px;
+    background:#fff;
+    border-top:1px solid #e0e0e0;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    padding:10px 0 10px max(8px, env(safe-area-inset-bottom));
+    z-index:1000;
+  }
+  .nav-item{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    font-size:13px;
+    font-weight:600;
+    color:#9a9ca3;
+  }
   .nav-item.active{ color:var(--red); }
-  .nav-icon{ font-size:18px; }
+  .nav-icon.active{ color:var(--red); }
+  .nav-icon{
+    width:35px;
+    height:35px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:16px;
+    color:#9a9ca3;
+  }
+  .nav-icon svg{ fill:currentColor; }
+  @media (max-width: 390px){ .nav-item{ font-size:9px; } }
 
   .conn-indicator{ position:absolute; left:14px; top:calc(18px + var(--sat)); font-size:10px; color:var(--text-dim); display:flex; align-items:center; gap:5px; }
   .conn-dot{ width:6px; height:6px; border-radius:50%; background:#555; }
@@ -190,19 +362,16 @@
         <button class="active">Real</button>
         <button>Demo</button>
       </div>
-      <div class="icon-btn">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-        <div class="bell-wrap">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
-          <span class="badge-count">6</span>
-        </div>
+      <div class="header-icons">
+        <div class="icon-btn" id="eyeToggle"><i class="fa-regular fa-eye" id="eyeIcon"></i></div>
+        <div class="icon-btn" id="bellToggle" onclick="window.location.href='home.html'"><i class="fa-regular fa-bell"></i> <span class="badge">5</span></div>
       </div>
     </div>
 
     <!-- Balance -->
     <div class="balance">
       <div class="balance-label">Total trading value</div>
-      <div class="balance-amount">0.00 USD <span class="refresh-ic">&#8635;</span></div>
+      <div class="balance-amount" id="balanceAmount"><span class="amount-text" data-value="0.00 USD">0.00 USD</span> <span class="refresh-ic">&#8635;</span></div>
       <div class="updated" id="updatedTxt">Updated just now</div>
     </div>
 
@@ -226,7 +395,9 @@
   <div class="section">
     <div class="section-title gold">Most traded markets</div>
   </div>
-  <div class="market-grid" id="marketGrid"></div>
+  <div class="market-grid" id="marketGrid">
+    
+  </div>
 
   <!-- Featured -->
   <div class="section" style="padding-bottom:0;">
@@ -256,7 +427,7 @@
     <div class="section-title">Platforms</div>
 
     <div class="platform-card">
-      <div class="platform-logo">DT</div>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 72 72" role="img" width="56" height="56"><path fill="#FF444F" d="M0 13.5C0 6.044 6.044 0 13.5 0h45C65.956 0 72 6.044 72 13.5v45C72 65.956 65.956 72 58.5 72h-45C6.044 72 0 65.956 0 58.5z"></path><path fill="#E12E3A" d="M13.5 0C6.044 0 0 6.044 0 13.5v.392L67.308 3.268A13.45 13.45 0 0 0 58.5 0zm55.197 4.652L56.35 72h2.15C65.956 72 72 65.956 72 58.5v-45c0-3.384-1.246-6.478-3.303-8.848"></path><path fill="#fff" d="M22.363 42.898q.347.032.788.063h1.102q3.686 0 5.45-1.858 1.795-1.859 1.795-5.135 0-3.433-1.7-5.197-1.702-1.764-5.387-1.764-.504 0-1.04.031-.536 0-1.008.063zm14.207-6.93q0 2.835-.882 4.946t-2.52 3.496q-1.607 1.386-3.938 2.08-2.331.692-5.229.692-1.322 0-3.087-.126a24 24 0 0 1-3.465-.44V25.352q1.701-.315 3.528-.41 1.86-.126 3.182-.126 2.804 0 5.071.63 2.3.63 3.938 1.985t2.52 3.465.882 5.071M54.552 25.07v4.189h-6.584v17.64h-4.914v-17.64h-6.583v-4.19z"></path></svg>
       <div>
         <div class="platform-name">Deriv Trader</div>
         <div class="platform-desc">Trade options on 100+ markets. No overnight swap fees.</div>
@@ -264,7 +435,7 @@
     </div>
 
     <div class="platform-card" onclick="window.location.href='/#chart'" style="cursor:pointer">
-      <div class="platform-logo db">DB</div>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 72 72" role="img" width="56" height="56"><path fill="#FF444F" d="M0 13.5C0 6.044 6.044 0 13.5 0h45C65.956 0 72 6.044 72 13.5v45C72 65.956 65.956 72 58.5 72h-45C6.044 72 0 65.956 0 58.5z"></path><path fill="#E12E3A" d="M13.5 0C6.044 0 0 6.044 0 13.5v.392L67.308 3.268A13.45 13.45 0 0 0 58.5 0zm55.197 4.652L56.35 72h2.15C65.956 72 72 65.956 72 58.5v-45c0-3.384-1.246-6.478-3.303-8.848"></path><path fill="#fff" d="M21.63 42.86q.345.03.787.063h1.103q3.685 0 5.45-1.859 1.795-1.858 1.795-5.134 0-3.434-1.701-5.198t-5.387-1.764q-.503 0-1.04.032-.534 0-1.007.063zm14.206-6.93q0 2.835-.882 4.945t-2.52 3.497q-1.605 1.386-3.937 2.079-2.33.693-5.23.693-1.322 0-3.086-.126a24 24 0 0 1-3.465-.441V25.314q1.701-.314 3.528-.41 1.859-.125 3.181-.125 2.805 0 5.072.63 2.3.63 3.937 1.984t2.52 3.465.882 5.072m9.806 11.214q-1.796 0-3.59-.126a24 24 0 0 1-3.686-.504V25.346a29 29 0 0 1 3.307-.41 38 38 0 0 1 3.34-.157q2.078 0 3.81.315 1.765.284 3.025 1.008a5.2 5.2 0 0 1 1.953 1.921q.724 1.166.724 2.898 0 2.615-2.52 4.127 2.079.788 2.835 2.142t.756 3.055q0 3.434-2.52 5.166-2.489 1.733-7.434 1.733m-2.488-9.797v5.639q.535.063 1.165.094.63.032 1.386.032 2.205 0 3.56-.63t1.354-2.331q0-1.512-1.134-2.142-1.134-.662-3.244-.662zm0-3.748h2.394q2.268 0 3.244-.567.977-.6.977-1.89 0-1.323-1.008-1.859-1.009-.535-2.961-.535-.63 0-1.355.031-.724 0-1.291.063z"></path></svg>
       <div>
         <div class="platform-name">Deriv Bot</div>
         <div class="platform-desc">Build and run automated bots, no coding needed.</div>
@@ -272,7 +443,7 @@
     </div>
 
     <div class="platform-card">
-      <div class="platform-logo st">ST</div>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 72 72" role="img" width="56" height="56"><path fill="#384177" d="M0 13.5C0 6.044 6.044 0 13.5 0h45C65.956 0 72 6.044 72 13.5v45C72 65.956 65.956 72 58.5 72h-45C6.044 72 0 65.956 0 58.5z"></path><path fill="#2A3052" d="M13.5 0C6.044 0 0 6.044 0 13.5v.392L67.308 3.268A13.45 13.45 0 0 0 58.5 0zm55.197 4.652L56.35 72h2.15C65.956 72 72 65.956 72 58.5v-45c0-3.384-1.246-6.478-3.303-8.848"></path><path fill="#fff" d="M26.963 43.198q1.04 0 1.7-.158.694-.189 1.103-.472.41-.315.567-.725.158-.41.158-.913 0-1.071-1.008-1.764-1.008-.725-3.465-1.544a30 30 0 0 1-2.142-.85 8.6 8.6 0 0 1-1.922-1.229 6.1 6.1 0 0 1-1.386-1.795q-.535-1.071-.535-2.583t.567-2.71a5.8 5.8 0 0 1 1.606-2.078q1.04-.85 2.52-1.292 1.48-.472 3.34-.472 2.205 0 3.81.472 1.608.473 2.647 1.04l-1.418 3.874a12 12 0 0 0-2.047-.819q-1.103-.378-2.678-.378-1.764 0-2.551.504-.756.473-.756 1.48 0 .6.283 1.009.285.41.788.756.535.316 1.197.598.693.252 1.512.536 1.7.63 2.96 1.26 1.26.598 2.08 1.417a5.1 5.1 0 0 1 1.26 1.922q.41 1.102.41 2.677 0 3.056-2.143 4.757-2.142 1.67-6.457 1.67-1.45 0-2.615-.19a16 16 0 0 1-2.079-.41 13 13 0 0 1-1.543-.535q-.63-.283-1.071-.535l1.386-3.906q.976.535 2.394.976 1.449.41 3.528.41m26.381-18.081v4.19h-6.583v17.64h-4.914v-17.64h-6.584v-4.19z"></path></svg>
       <div>
         <div class="platform-name">SmartTrader</div>
         <div class="platform-desc">Classic interface for advanced options traders.</div>
@@ -285,9 +456,9 @@
     <div class="section-title">Trade types</div>
   </div>
   <div class="pill-row">
-    <div class="pill active">Deriv Trader</div>
-    <div class="pill" onclick="window.location.href='/#chart'" style="cursor:pointer">Deriv Bot</div>
-    <div class="pill">SmartTrader</div>
+    <div class="pill active">TradeLab Trader</div>
+    <div class="pill" onclick="window.location.href='/#chart'" style="cursor:pointer">TradeLab Bot</div>
+    <div class="pill">TradeLab Classic</div>
   </div>
 
   <div class="trade-type-grid">
@@ -303,51 +474,87 @@
     <div class="trade-type"><span class="tt-icon mixed"><span>&#8599;</span><span>&#8600;</span></span>Turbos</div>
   </div>
 
-  <!-- Bottom nav -->
-  <div class="bottom-nav">
-    <div class="nav-item" onclick="window.location.href='home.html'" style="cursor:pointer"><span class="nav-icon">&#8962;</span>Home</div>
-    <div class="nav-item"><span class="nav-icon">&#128179;</span>CFDs</div>
-    <div class="nav-item active"><span class="nav-icon">&#8599;</span>Options</div>
-    <div class="nav-item" onclick="window.location.href='/#chart'" style="cursor:pointer"><span class="nav-icon">&#128188;</span>Portfolio</div>
-  </div>
+  <!-- Bottom nav (igual a home.html) -->
+  <nav class="bottom-nav">
+    <div class="nav-item" onclick="window.location.href='home.html'" style="cursor:pointer">
+      <div class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" role="img" viewBox="0 0 32 32"
+        ><path d="M27.21 16.5c0 .703-.585 1.25-1.25 1.25h-1.25l.04 6.25c0 1.406-1.094 2.54-2.5 2.54H9.75a2.49 2.49 0 0 1-2.5-2.5v-6.29H6c-.703 0-1.25-.547-1.25-1.25 0-.352.117-.664.39-.937l10-8.75c.274-.274.587-.313.86-.313s.586.078.82.273l9.961 8.79c.313.273.469.585.43.937"></path><polyline points="9 22 12 17 15 22"></polyline></svg></div>
+      Home
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" role="img" viewBox="0 0 32 32"
+        ><path d="M7.25 8.375v13.75A1.85 1.85 0 0 0 9.125 24h16.25c.313 0 .625.313.625.625a.64.64 0 0 1-.625.625H9.125C7.367 25.25 6 23.883 6 22.125V8.375c0-.312.273-.625.625-.625.313 0 .625.313.625.625m11.25 0v1.915c.703.155 1.25.78 1.25 1.523v3.124c0 .782-.547 1.407-1.25 1.563v1.875a.64.64 0 0 1-.625.625.617.617 0 0 1-.625-.625V16.5c-.742-.156-1.25-.781-1.25-1.562v-3.126c0-.742.508-1.367 1.25-1.523V8.375c0-.312.273-.625.625-.625.313 0 .625.313.625.625M12.875 9c.313 0 .625.313.625.625v1.915c.703.155 1.25.78 1.25 1.523v4.374c0 .782-.547 1.407-1.25 1.563v1.875a.64.64 0 0 1-.625.625.617.617 0 0 1-.625-.625V19c-.742-.156-1.25-.781-1.25-1.562v-4.375c0-.743.508-1.368 1.25-1.524V9.625c0-.312.273-.625.625-.625m5.625 2.813a.336.336 0 0 0-.312-.313h-.625a.31.31 0 0 0-.313.313v3.124c0 .196.117.313.313.313h.625a.31.31 0 0 0 .312-.312zm4.063 3.437a.31.31 0 0 0-.313.313v1.874c0 .196.117.313.313.313h.625a.31.31 0 0 0 .312-.312v-1.875a.336.336 0 0 0-.312-.313zM22.25 14v-1.875c0-.312.273-.625.625-.625.313 0 .625.313.625.625v1.915c.703.155 1.25.78 1.25 1.523v1.874c0 .782-.547 1.407-1.25 1.563v1.875a.64.64 0 0 1-.625.625.617.617 0 0 1-.625-.625V19c-.742-.156-1.25-.781-1.25-1.562v-1.875c0-.743.508-1.368 1.25-1.524zm-9.062-1.25h-.626a.31.31 0 0 0-.312.313v4.374c0 .196.117.313.313.313h.624a.31.31 0 0 0 .313-.312v-4.375a.336.336 0 0 0-.312-.313"></path><polyline points="9 22 12 17 15 22"></polyline></svg></div>
+      CFDs
+    </div>
+    <div class="nav-item active">
+      <div class="nav-icon active"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" role="img" viewBox="0 0 32 32"
+        ><path d="M8.852 26.305a2.184 2.184 0 0 1-2.188-2.188v-5.586c0-.742.586-1.367 1.328-1.367h1.016c.781 0 1.406.625 1.406 1.367v1.485l1.172-1.172c.703-.703 1.601-1.094 2.578-1.094h2.734c.743 0 1.368.625 1.368 1.367v.86a1.36 1.36 0 0 1-1.368 1.367H14.79c-.39 0-.82.156-1.094.468l-.742.743h1.485c.742 0 1.367.625 1.367 1.367v1.015c0 .782-.625 1.368-1.367 1.368zm-.86-8.086a.336.336 0 0 0-.312.312v5.586c0 .625.547 1.172 1.172 1.172h5.546a.35.35 0 0 0 .352-.352v-1.015c0-.156-.156-.313-.352-.313h-1.875c-.351 0-.664-.234-.82-.547a.92.92 0 0 1 .195-.937l1.016-1.055a2.77 2.77 0 0 1 1.875-.742h2.07a.31.31 0 0 0 .313-.312v-.86c0-.195-.117-.312-.313-.312h-2.734c-.664 0-1.328.273-1.836.742l-1.445 1.484c-.274.235-.664.313-.977.157a.8.8 0 0 1-.547-.782v-1.914a.336.336 0 0 0-.312-.312zm16.055-1.563H23.03c-.742 0-1.367-.625-1.367-1.406v-1.484l-1.172 1.21c-.703.665-1.601 1.055-2.578 1.055H15.18a1.36 1.36 0 0 1-1.367-1.367v-.86c0-.742.624-1.367 1.367-1.367h2.11c.39 0 .78-.156 1.093-.43l.742-.78h-1.484a1.36 1.36 0 0 1-1.368-1.368V8.844c0-.742.625-1.367 1.368-1.367h5.547c1.21 0 2.226 1.015 2.226 2.226v5.547c0 .781-.625 1.367-1.367 1.367zm-2.188-4.14c.118 0 .235 0 .313.039a.88.88 0 0 1 .547.82v1.914c0 .156.156.313.351.313h1.016a.336.336 0 0 0 .312-.313V9.703c0-.625-.507-1.172-1.171-1.172H17.68a.31.31 0 0 0-.313.313v1.015c0 .196.117.352.313.352h1.875c.351 0 .664.195.82.547.117.312.078.703-.195.937l-1.016 1.016c-.508.508-1.133.781-1.836.781h-2.11c-.195 0-.312.117-.312.313v.86c0 .194.156.312.313.312h2.734c.703 0 1.328-.274 1.836-.743l1.484-1.484a.8.8 0 0 1 .586-.234"></path><polyline points="9 22 12 17 15 22"></polyline></svg></div>
+      Options
+    </div>
+    <div class="nav-item" onclick="window.location.href='/#chart'" style="cursor:pointer">
+      <div class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" role="img" viewBox="0 0 32 32"
+        ><path d="M9.125 7.75h15c.313 0 .625.313.625.625a.64.64 0 0 1-.625.625h-15C8.07 9 7.25 9.86 7.25 10.875v11.25A1.85 1.85 0 0 0 9.125 24h13.75c1.016 0 1.875-.82 1.875-1.875v-8.75c0-1.016-.86-1.875-1.875-1.875h-12.5a.617.617 0 0 1-.625-.625c0-.312.273-.625.625-.625h12.5A3.134 3.134 0 0 1 26 13.375v8.75a3.11 3.11 0 0 1-3.125 3.125H9.125C7.367 25.25 6 23.883 6 22.125v-11.25A3.11 3.11 0 0 1 9.125 7.75M21 18.688c-.547 0-.937-.391-.937-.938 0-.508.39-.937.937-.937a.95.95 0 0 1 .938.937c0 .547-.43.938-.938.938"></path><polyline points="9 22 12 17 15 22"></polyline></svg></div>
+      Portfolio
+    </div>
+  </nav>
+
 
 </div>
 
 <script>
-/* ================= Deriv WebSocket API — live line charts ================= */
+/* ================= WebSocket de mercados — gráficas en vivo ================= */
 const APP_ID = 1089;
 const WS_URL = `wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`;
 
 // Exact 5 markets from the screenshots
 const MARKETS = [
-  { code:'R_75',    name:'Volatility 75 Index',       badge:'blue'   },
-  { code:'R_10',    name:'Volatility 10 Index',       badge:'blue'   },
-  { code:'1HZ75V',  name:'Volatility 75 (1s) Index',  badge:'purple' },
-  { code:'R_50',    name:'Volatility 50 Index',       badge:'blue'   },
-  { code:'1HZ100V', name:'Volatility 100 (1s) Index', badge:'purple' },
+  { code:'R_75',    name:'Volatility 75 Index' },
+  { code:'R_10',    name:'Volatility 10 Index' },
+  { code:'1HZ75V',  name:'Volatility 75 (1s) Index' },
+  { code:'1HZ50V',  name:'Volatility 50 (1s) Index' },
+  { code:'1HZ10V',  name:'Volatility 10 (1s) Index' },
 ];
+
+const MARKET_ICONS = {
+  R_75: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 32 32" width="32" height="32" role="img" class="size-8 shrink-0"><path fill="#0AA0B0" d="M22.5 13H24v9h-1.5v10h-1V22H20v-9h1.5v-2h1zm7.5-2v7h-1.5v4h-1v-4H26v-7zm-13.5 9v-4h-1v4H14v8h1.5v2h1v-2H18v-8zm-6-5H12v6h-1.5v7h-1v-7H8v-6h1.5v-2h1zm-6 4H6v4H4.5v2h-1v-2H2v-4h1.5v-2h1z"></path><path fill="#414652" fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.403 3.392L3.531 8h1.264l1.8-4.544v-1.04H2.643v1.992H3.66V3.392zm3.237.072h2.536V2.416H7.76l-.208 3.16.984.136q.112-.127.32-.256.216-.136.544-.136.392 0 .616.224t.224.608v.064q0 .408-.224.656-.216.248-.648.248t-.688-.224a2.2 2.2 0 0 1-.44-.56l-.872.688q.128.216.304.408t.416.344q.24.144.552.232t.72.088q.511 0 .912-.144.4-.152.672-.416.28-.264.416-.624.144-.368.144-.792 0-.416-.136-.744a1.6 1.6 0 0 0-.912-.912 1.9 1.9 0 0 0-.672-.12q-.264 0-.456.064A.9.9 0 0 0 9 4.592q-.135.112-.24.28a2.5 2.5 0 0 0-.176.36H8.52z" clip-rule="evenodd"></path><path fill="#fff" d="m3.531 8 1.872-4.608H3.66v1.016H2.643V2.416h3.952v1.04L4.795 8zm7.645-4.536H8.64l-.12 1.768h.064q.08-.2.176-.36.105-.168.24-.28.136-.12.328-.184t.456-.064q.36 0 .672.12t.544.352a1.6 1.6 0 0 1 .368.56q.136.329.136.744 0 .425-.144.792-.136.36-.416.624a1.9 1.9 0 0 1-.672.416q-.4.144-.912.144-.408 0-.72-.088a2.3 2.3 0 0 1-.552-.232 2 2 0 0 1-.416-.344 2.5 2.5 0 0 1-.304-.408l.872-.688q.185.328.44.56.255.224.688.224t.648-.248q.224-.248.224-.656v-.064q0-.384-.224-.608-.225-.225-.616-.224-.328 0-.544.136-.208.127-.32.256l-.984-.136.208-3.16h3.416z"></path></svg>`,
+  R_10: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 32 32" width="32" height="32" role="img" class="size-8 shrink-0"><path fill="#0AA0B0" d="M22.5 13H24v9h-1.5v10h-1V22H20v-9h1.5v-2h1zm7.5-2v7h-1.5v4h-1v-4H26v-7zm-13.5 9v-4h-1v4H14v8h1.5v2h1v-2H18v-8zm-6-5H12v6h-1.5v7h-1v-7H8v-6h1.5v-2h1zm-6 4H6v4H4.5v2h-1v-2H2v-4h1.5v-2h1z"></path><path fill="#414652" d="M10.064 6.728q-.184.352-.664.352t-.664-.352-.184-.992V4.68q0-.64.184-.992t.664-.352.664.352.184.992v1.056q0 .64-.184.992"></path><path fill="#414652" fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm5.776 7.336q.528.76 1.624.76 1.095 0 1.624-.76.528-.76.528-2.128t-.528-2.128T9.4 2.32t-1.624.76-.528 2.128.528 2.128m-4.82-.304V8h3.887v-.968H5.66V2.416H3.82l-1.336 1.76.768.6 1.136-1.488h.072v3.744z" clip-rule="evenodd"></path><path fill="#fff" d="M2.955 8v-.968H4.46V3.288h-.072L3.251 4.776l-.768-.6 1.336-1.76h1.84v4.616h1.184V8zm6.445.096q-1.095 0-1.624-.76-.528-.76-.528-2.128t.528-2.128T9.4 2.32t1.624.76.528 2.128-.528 2.128-1.624.76m0-1.016q.48 0 .664-.352t.184-.992V4.68q0-.64-.184-.992T9.4 3.336t-.664.352-.184.992v1.056q0 .64.184.992t.664.352"></path></svg>`,
+  '1HZ75V': `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 32 32" width="32" height="32" role="img" class="size-8 shrink-0"><path fill="#0AA0B0" d="M22.5 13H24v9h-1.5v10h-1V22H20v-9h1.5v-2h1zm7.5-2v7h-1.5v4h-1v-4H26v-7zm-13.5 9v-4h-1v4H14v8h1.5v2h1v-2H18v-8zm-6-5H12v6h-1.5v7h-1v-7H8v-6h1.5v-2h1zm-6 4H6v4H4.5v2h-1v-2H2v-4h1.5v-2h1z"></path><path fill="#414652" fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.403 3.392L3.531 8h1.264l1.8-4.544v-1.04H2.643v1.992H3.66V3.392zm3.237.072h2.536V2.416H7.76l-.208 3.16.984.136q.112-.127.32-.256.216-.136.544-.136.392 0 .616.224t.224.608v.064q0 .408-.224.656-.216.248-.648.248t-.688-.224a2.2 2.2 0 0 1-.44-.56l-.872.688q.128.216.304.408t.416.344q.24.144.552.232t.72.088q.511 0 .912-.144.4-.152.672-.416.28-.264.416-.624.144-.368.144-.792 0-.416-.136-.744a1.6 1.6 0 0 0-.912-.912 1.9 1.9 0 0 0-.672-.12q-.264 0-.456.064A.9.9 0 0 0 9 4.592q-.135.112-.24.28a2.5 2.5 0 0 0-.176.36H8.52z" clip-rule="evenodd"></path><path fill="#fff" d="m3.531 8 1.872-4.608H3.66v1.016H2.643V2.416h3.952v1.04L4.795 8zm7.645-4.536H8.64l-.12 1.768h.064q.08-.2.176-.36.105-.168.24-.28.136-.12.328-.184t.456-.064q.36 0 .672.12t.544.352a1.6 1.6 0 0 1 .368.56q.136.329.136.744 0 .425-.144.792-.136.36-.416.624a1.9 1.9 0 0 1-.672.416q-.4.144-.912.144-.408 0-.72-.088a2.3 2.3 0 0 1-.552-.232 2 2 0 0 1-.416-.344 2.5 2.5 0 0 1-.304-.408l.872-.688q.185.328.44.56.255.224.688.224t.648-.248q.224-.248.224-.656v-.064q0-.384-.224-.608-.225-.225-.616-.224-.328 0-.544.136-.208.127-.32.256l-.984-.136.208-3.16h3.416z"></path><path fill="#FF444F" fill-rule="evenodd" d="M27 0a5 5 0 1 0 0 10 5 5 0 0 0 0-10m-2.747 6.274V7h2.916v-.726h-.888V2.812h-1.38L23.9 4.132l.576.45.852-1.116h.054v2.808zm3.748.654q.312.144.768.144.306 0 .552-.078.252-.078.426-.216.18-.144.276-.336a.9.9 0 0 0 .096-.42q0-.81-1.038-.948l-.354-.048q-.192-.03-.264-.096a.28.28 0 0 1-.066-.198q0-.12.096-.192t.324-.072q.198 0 .384.09.192.084.342.234l.51-.522a2 2 0 0 0-.246-.204 1 1 0 0 0-.27-.156 1.3 1.3 0 0 0-.336-.096 2.3 2.3 0 0 0-.432-.036q-.282 0-.51.078a1.1 1.1 0 0 0-.384.21.94.94 0 0 0-.246.324 1 1 0 0 0-.084.414q0 .84 1.062.972l.342.042q.318.042.318.264a.27.27 0 0 1-.102.222q-.102.078-.366.078a1 1 0 0 1-.462-.108 1.4 1.4 0 0 1-.372-.294l-.522.528q.246.27.558.42" clip-rule="evenodd"></path><path fill="#fff" d="M24.253 7v-.726h1.128V3.466h-.054l-.852 1.116-.576-.45 1.002-1.32h1.38v3.462h.888V7zm4.517.072q-.456 0-.769-.144-.312-.15-.558-.42l.522-.528q.168.186.372.294t.462.108q.264 0 .366-.078a.27.27 0 0 0 .102-.222q0-.222-.318-.264l-.342-.042q-1.062-.132-1.062-.972 0-.228.084-.414a.94.94 0 0 1 .246-.324q.162-.138.384-.21.228-.078.51-.078.246 0 .432.036.192.03.336.096.15.06.27.156.126.09.246.204l-.51.522q-.15-.15-.342-.234a.9.9 0 0 0-.384-.09q-.228 0-.324.072a.23.23 0 0 0-.096.192q0 .126.066.198.072.066.264.096l.354.048q1.038.138 1.038.948a.9.9 0 0 1-.096.42q-.096.192-.276.336a1.3 1.3 0 0 1-.426.216 1.8 1.8 0 0 1-.552.078"></path></svg>`,
+  '1HZ50V': `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 32 32" width="32" height="32" role="img" class="size-8 shrink-0"><path fill="#0AA0B0" d="M22.5 13H24v9h-1.5v10h-1V22H20v-9h1.5v-2h1zm7.5-2v7h-1.5v4h-1v-4H26v-7zm-13.5 9v-4h-1v4H14v8h1.5v2h1v-2H18v-8zm-6-5H12v6h-1.5v7h-1v-7H8v-6h1.5v-2h1zm-6 4H6v4H4.5v2h-1v-2H2v-4h1.5v-2h1z"></path><path fill="#414652" d="M10.064 6.728q-.184.352-.664.352t-.664-.352-.184-.992V4.68q0-.64.184-.992t.664-.352.664.352.184.992v1.056q0 .64-.184.992"></path><path fill="#414652" fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm5.776 7.336q.528.76 1.624.76t1.624-.76.528-2.128-.528-2.128T9.4 2.32t-1.624.76-.528 2.128.528 2.128M3.843 3.464H6.38V2.416H2.963l-.208 3.16.984.136q.112-.127.32-.256.216-.135.544-.136.392 0 .616.224.224.225.224.608v.064q0 .408-.224.656-.216.248-.648.248t-.688-.224a2.2 2.2 0 0 1-.44-.56l-.872.688q.128.216.304.408t.416.344q.24.144.552.232t.72.088q.511 0 .912-.144.4-.152.672-.416.28-.264.416-.624.144-.368.144-.792 0-.416-.136-.744a1.6 1.6 0 0 0-.912-.912 1.9 1.9 0 0 0-.672-.12q-.264 0-.456.064a.9.9 0 0 0-.328.184q-.135.112-.24.28a2.5 2.5 0 0 0-.176.36h-.064z" clip-rule="evenodd"></path><path fill="#fff" d="M6.38 3.464H3.842l-.12 1.768h.064q.08-.2.176-.36.105-.168.24-.28.136-.12.328-.184t.456-.064q.36 0 .672.12t.544.352a1.6 1.6 0 0 1 .368.56q.135.328.136.744 0 .425-.144.792-.136.36-.416.624a1.9 1.9 0 0 1-.672.416q-.4.144-.912.144a2.7 2.7 0 0 1-.72-.088 2.3 2.3 0 0 1-.552-.232 2 2 0 0 1-.416-.344 2.5 2.5 0 0 1-.304-.408l.872-.688q.185.328.44.56.256.224.688.224t.648-.248q.224-.248.224-.656v-.064q0-.384-.224-.608-.225-.225-.616-.224-.328 0-.544.136-.208.127-.32.256l-.984-.136.208-3.16H6.38zM9.4 8.096q-1.096 0-1.624-.76t-.528-2.128.528-2.128T9.4 2.32t1.624.76.528 2.128-.528 2.128-1.624.76m0-1.016q.48 0 .664-.352t.184-.992V4.68q0-.64-.184-.992T9.4 3.336t-.664.352-.184.992v1.056q0 .64.184.992t.664.352"></path><path fill="#FF444F" fill-rule="evenodd" d="M27 0a5 5 0 1 0 0 10 5 5 0 0 0 0-10m-2.747 6.274V7h2.916v-.726h-.888V2.812h-1.38L23.9 4.132l.576.45.852-1.116h.054v2.808zm3.748.654q.312.144.768.144.306 0 .552-.078.252-.078.426-.216.18-.144.276-.336a.9.9 0 0 0 .096-.42q0-.81-1.038-.948l-.354-.048q-.192-.03-.264-.096a.28.28 0 0 1-.066-.198q0-.12.096-.192t.324-.072q.198 0 .384.09.192.084.342.234l.51-.522a2 2 0 0 0-.246-.204 1 1 0 0 0-.27-.156 1.3 1.3 0 0 0-.336-.096 2.3 2.3 0 0 0-.432-.036q-.282 0-.51.078a1.1 1.1 0 0 0-.384.21.94.94 0 0 0-.246.324 1 1 0 0 0-.084.414q0 .84 1.062.972l.342.042q.318.042.318.264a.27.27 0 0 1-.102.222q-.102.078-.366.078a1 1 0 0 1-.462-.108 1.4 1.4 0 0 1-.372-.294l-.522.528q.246.27.558.42" clip-rule="evenodd"></path><path fill="#fff" d="M24.253 7v-.726h1.128V3.466h-.054l-.852 1.116-.576-.45 1.002-1.32h1.38v3.462h.888V7zm4.517.072q-.456 0-.769-.144-.312-.15-.558-.42l.522-.528q.168.186.372.294t.462.108q.264 0 .366-.078a.27.27 0 0 0 .102-.222q0-.222-.318-.264l-.342-.042q-1.062-.132-1.062-.972 0-.228.084-.414a.94.94 0 0 1 .246-.324q.162-.138.384-.21.228-.078.51-.078.246 0 .432.036.192.03.336.096.15.06.27.156.126.09.246.204l-.51.522q-.15-.15-.342-.234a.9.9 0 0 0-.384-.09q-.228 0-.324.072a.23.23 0 0 0-.096.192q0 .126.066.198.072.066.264.096l.354.048q1.038.138 1.038.948a.9.9 0 0 1-.096.42q-.096.192-.276.336a1.3 1.3 0 0 1-.426.216 1.8 1.8 0 0 1-.552.078"></path></svg>`,
+  '1HZ10V': `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 32 32" width="32" height="32" role="img" class="size-8 shrink-0"><path fill="#0AA0B0" d="M22.5 13H24v9h-1.5v10h-1V22H20v-9h1.5v-2h1zm7.5-2v7h-1.5v4h-1v-4H26v-7zm-13.5 9v-4h-1v4H14v8h1.5v2h1v-2H18v-8zm-6-5H12v6h-1.5v7h-1v-7H8v-6h1.5v-2h1zm-6 4H6v4H4.5v2h-1v-2H2v-4h1.5v-2h1z"></path><path fill="#FF444F" fill-rule="evenodd" d="M27 0a5 5 0 1 0 0 10 5 5 0 0 0 0-10m-2.747 6.274V7h2.916v-.726h-.888V2.812h-1.38L23.9 4.132l.576.45.852-1.116h.054v2.808zm3.748.654q.312.144.768.144.306 0 .552-.078.252-.078.426-.216.18-.144.276-.336a.9.9 0 0 0 .096-.42q0-.81-1.038-.948l-.354-.048q-.192-.03-.264-.096a.28.28 0 0 1-.066-.198q0-.12.096-.192t.324-.072q.198 0 .384.09.192.084.342.234l.51-.522a2 2 0 0 0-.246-.204 1 1 0 0 0-.27-.156 1.3 1.3 0 0 0-.336-.096 2.3 2.3 0 0 0-.432-.036q-.282 0-.51.078a1.1 1.1 0 0 0-.384.21.94.94 0 0 0-.246.324 1 1 0 0 0-.084.414q0 .84 1.062.972l.342.042q.318.042.318.264a.27.27 0 0 1-.102.222q-.102.078-.366.078a1 1 0 0 1-.462-.108 1.4 1.4 0 0 1-.372-.294l-.522.528q.246.27.558.42" clip-rule="evenodd"></path><path fill="#fff" d="M24.253 7v-.726h1.128V3.466h-.054l-.852 1.116-.576-.45 1.002-1.32h1.38v3.462h.888V7zm4.517.072q-.456 0-.769-.144-.312-.15-.558-.42l.522-.528q.168.186.372.294t.462.108q.264 0 .366-.078a.27.27 0 0 0 .102-.222q0-.222-.318-.264l-.342-.042q-1.062-.132-1.062-.972 0-.228.084-.414a.94.94 0 0 1 .246-.324q.162-.138.384-.21.228-.078.51-.078.246 0 .432.036.192.03.336.096.15.06.27.156.126.09.246.204l-.51.522q-.15-.15-.342-.234a.9.9 0 0 0-.384-.09q-.228 0-.324.072a.23.23 0 0 0-.096.192q0 .126.066.198.072.066.264.096l.354.048q1.038.138 1.038.948a.9.9 0 0 1-.096.42q-.096.192-.276.336a1.3 1.3 0 0 1-.426.216 1.8 1.8 0 0 1-.552.078"></path><path fill="#414652" d="M10.064 6.728q-.184.352-.664.352t-.664-.352-.184-.992V4.68q0-.64.184-.992t.664-.352.664.352.184.992v1.056q0 .64-.184.992"></path><path fill="#414652" fill-rule="evenodd" d="M2 0a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm5.776 7.336q.528.76 1.624.76 1.095 0 1.624-.76.528-.76.528-2.128t-.528-2.128T9.4 2.32t-1.624.76-.528 2.128.528 2.128m-4.82-.304V8h3.887v-.968H5.66V2.416H3.82l-1.336 1.76.768.6 1.136-1.488h.072v3.744z" clip-rule="evenodd"></path><path fill="#fff" d="M2.955 8v-.968H4.46V3.288h-.072L3.251 4.776l-.768-.6 1.336-1.76h1.84v4.616h1.184V8zm6.445.096q-1.095 0-1.624-.76-.528-.76-.528-2.128t.528-2.128T9.4 2.32t1.624.76.528 2.128-.528 2.128-1.624.76m0-1.016q.48 0 .664-.352t.184-.992V4.68q0-.64-.184-.992T9.4 3.336t-.664.352-.184.992v1.056q0 .64.184.992t.664.352"></path></svg>`
+};
 
 const history = {}; // code -> [{epoch, price}]
 let ws;
 
 function buildGrid(){
   const grid = document.getElementById('marketGrid');
+
   grid.innerHTML = MARKETS.map(m => `
-    <div class="market-card">
-      <div>
-        <div class="market-icon-row">
-          <span class="badge ${m.badge}">V</span>
-          <div class="mini-bars">
-            <span style="height:5px"></span><span style="height:9px"></span><span style="height:4px"></span><span style="height:11px"></span><span style="height:6px"></span>
-          </div>
-        </div>
-        <div class="market-name">${m.name}</div>
+    <button type="button" class="market-card" data-testid="options-btn-top-market-${m.code}">
+      <div class="market-icon-row">
+        ${MARKET_ICONS[m.code]}
       </div>
-      <div class="market-price" id="price-${m.code}">…</div>
-      <svg class="sparkline" id="spark-${m.code}" viewBox="0 0 100 30" preserveAspectRatio="none"></svg>
-      <div class="market-change" id="change-${m.code}">—</div>
-    </div>
-  `).join('') + `<div class="market-card viewall-card"><span>&#8594;</span><span>View all</span></div>`;
+
+      <div class="market-info">
+        <div class="market-name">${m.name}</div>
+        <div class="market-price" id="price-${m.code}">…</div>
+      </div>
+
+      <div class="market-bottom" data-testid="options-text-top-market-change-${m.code}">
+        <svg class="sparkline" id="spark-${m.code}" viewBox="0 0 64 32" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <div class="market-change" id="change-${m.code}">—</div>
+      </div>
+    </button>
+  `).join('') + `
+    <button type="button" class="market-card viewall-card" data-testid="options-btn-top-markets-view-all">
+      <div class="viewall-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="m24.555 16.969-6.875 6.875a.66.66 0 0 1-.899 0 .66.66 0 0 1 0-.899l5.82-5.82H7.876a.617.617 0 0 1-.625-.625c0-.312.273-.625.625-.625h14.727l-5.82-5.781a.66.66 0 0 1 0-.899.66.66 0 0 1 .898 0l6.875 6.875a.66.66 0 0 1 0 .899"></path>
+        </svg>
+      </div>
+      <span>View all</span>
+    </button>
+  `;
 }
 
 function connect(){
@@ -373,9 +580,13 @@ function connect(){
 }
 
 function setConn(live){
-  document.getElementById('connDot').classList.toggle('live', live);
-  document.getElementById('connText').textContent = live ? 'Live' : 'Reconectando';
-  document.getElementById('updatedTxt').textContent = live ? 'Updated live · Deriv API' : 'Conectando a Deriv…';
+  // connDot/connText no existen en esta página: sin esta comprobación
+  // setConn() lanzaba un error en onopen y nunca se pedían los precios.
+  const dot = document.getElementById('connDot');
+  const txt = document.getElementById('connText');
+  if (dot) dot.classList.toggle('live', live);
+  if (txt) txt.textContent = live ? 'Live' : 'Reconectando';
+  document.getElementById('updatedTxt').textContent = live ? 'Updated live' : 'Conectando…';
 }
 
 function handle(data){
@@ -429,9 +640,23 @@ function drawSparkline(code, points, up){
     const y = h - ((p.price - min) / range) * h;
     return `${x.toFixed(2)},${y.toFixed(2)}`;
   }).join(' ');
-  const color = up ? '#4bd0a0' : '#ff4d6d';
-  svg.innerHTML = `<polyline points="${coords}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const color = up ? '#00875a' : '#de0040';
+  svg.innerHTML = `<polyline points="${coords}" fill="none" stroke="${color}" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>`;
 }
+
+/* Ojo: muestra/oculta el saldo (mismo comportamiento que home.html) */
+(function(){
+  const eyeBtn = document.getElementById('eyeToggle');
+  const eyeIcon = document.getElementById('eyeIcon');
+  const amount = document.querySelector('#balanceAmount .amount-text');
+  let hidden = false;
+  eyeBtn.addEventListener('click', () => {
+    hidden = !hidden;
+    amount.textContent = hidden ? '****' : amount.dataset.value;
+    eyeIcon.classList.toggle('fa-eye', !hidden);
+    eyeIcon.classList.toggle('fa-eye-slash', hidden);
+  });
+})();
 
 buildGrid();
 connect();
