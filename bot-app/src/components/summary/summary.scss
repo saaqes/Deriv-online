@@ -13,6 +13,14 @@
         height: inherit;
     }
 
+    // Móvil: ocupa TODO el alto del panel de Summary (entre las pestañas
+    // y las estadísticas), para que el texto "When you’re ready to
+    // trade..." quede centrado justo en la mitad, no pegado arriba.
+    @include mobile-or-tablet-screen {
+        flex: 1 1 auto;
+        min-height: 100%;
+    }
+
     &--loading {
         width: 100%;
     }
