@@ -9,6 +9,11 @@
 }
 
 .tabs-shadow {
+    // Oculto: era el degradado que indica "hay más pestañas" en la barra
+    // de pestañas superior, pero en móvil esa barra ya no se usa (la
+    // navegación está en el menú inferior). Quedaba como un cuadro/
+    // mancha suelto a la derecha, al lado del botón Volatility.
+    display: none !important;
     position: absolute;
     top: 8px;
     height: 40px;
