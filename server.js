@@ -510,14 +510,6 @@ const PUBLIC_FILES = new Set([
     '/icon-512.png',
     '/logo.png',
     '/manifest.webmanifest',
-    // Ícono PWA alterno (Aspecto → Chrome), ver browser-frame.js
-    '/manifest-chrome.webmanifest',
-    '/pwa-chrome/chrome.svg',
-    '/pwa-chrome/apple-touch-icon.png',
-    '/pwa-chrome/icon-192.png',
-    '/pwa-chrome/icon-512.png',
-    '/pwa-chrome/icon-192-maskable.png',
-    '/pwa-chrome/icon-512-maskable.png',
     '/front-channel.html',
     '/robots.txt',
 ]);
