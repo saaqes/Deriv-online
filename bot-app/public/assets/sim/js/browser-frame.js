@@ -331,34 +331,7 @@
     resetDocumentScroll();
   }
 
-  /* ---- Ícono de la PWA según el aspecto ----
-   * Chrome  -> manifest-chrome.webmanifest + apple-touch-icon de Chrome.
-   * Ninguno / Safari -> el manifest e ícono originales de la página.
-   * Los href originales se guardan la primera vez (data-bf-original),
-   * así se restaura exactamente lo que cada página tenía antes. */
-  var PWA_CHROME_MANIFEST = '/manifest-chrome.webmanifest';
-  var PWA_CHROME_APPLE_ICON = '/pwa-chrome/apple-touch-icon.png';
-
-  function swapLinkHref(rel, chromeHref, useChrome) {
-    var links = document.querySelectorAll('link[rel="' + rel + '"]');
-    for (var i = 0; i < links.length; i++) {
-      var link = links[i];
-      if (!link.hasAttribute('data-bf-original')) {
-        link.setAttribute('data-bf-original', link.getAttribute('href') || '');
-      }
-      var target = useChrome ? chromeHref : link.getAttribute('data-bf-original');
-      if (link.getAttribute('href') !== target) link.setAttribute('href', target);
-    }
-  }
-
-  function applyPwaIcon(mode) {
-    var useChrome = mode === 'chrome';
-    swapLinkHref('manifest', PWA_CHROME_MANIFEST, useChrome);
-    swapLinkHref('apple-touch-icon', PWA_CHROME_APPLE_ICON, useChrome);
-  }
-
   function apply(mode) {
-    applyPwaIcon(mode);
     var body = document.body;
     var existingTop = document.querySelector('.bf-top');
     if (existingTop) existingTop.remove();
