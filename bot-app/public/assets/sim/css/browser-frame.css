@@ -72,7 +72,10 @@ body.bf-active .notif-panel{
   width: 100%;
   background: #12121c;
   top: 0;
-  padding: calc(8px + env(safe-area-inset-top)) 10px 8px;
+  /* +5px de alto en total (2.5px arriba + 2.5px abajo) para que la
+     barra tenga un poco más de espacio. El resto de la app se acomoda
+     solo, porque browser-frame.js mide el alto real de la barra. */
+  padding: calc(10.5px + env(safe-area-inset-top)) 10px 10.5px;
   border-bottom: 1px solid #2a2b2e;
   display: flex;
   flex-direction: row;
