@@ -22,14 +22,15 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Portfolio | Deriv</title>
-<link rel="stylesheet" href="assets/sim/css/browser-frame.css?v=20261015p">
-<link rel="stylesheet" href="assets/sim/css/deriv-desktop.css?v=20261015p">
-<link rel="stylesheet" href="assets/sim/css/deriv-mobile.css?v=20261015p" media="(max-width:860px)">
-<link rel="stylesheet" href="assets/sim/css/deriv-icons.css?v=20261015p">
+<link rel="stylesheet" href="assets/sim/css/browser-frame.css?v=20261017n">
+<link rel="stylesheet" href="assets/sim/css/deriv-desktop.css?v=20261017n">
+<link rel="stylesheet" href="assets/sim/css/deriv-mobile.css?v=20261017n" media="(max-width:860px)">
+<link rel="stylesheet" href="assets/sim/css/deriv-icons.css?v=20261017n">
+<link rel="stylesheet" href="assets/sim/css/deriv-withdraw.css?v=20261017n">
 </head>
 <body class="bf-static-page" data-page="portfolio">
-<script src="assets/sim/js/sim-shared.js?v=20261015p"></script>
-<script src="assets/sim/js/browser-frame.js?v=20261015p"></script>
+<script src="assets/sim/js/sim-shared.js?v=20261017n"></script>
+<script src="assets/sim/js/browser-frame.js?v=20261017n"></script>
 <script>BrowserFrame.init();</script>
 <div class="dd-shell">
   <div id="ddSidebar"></div>
@@ -40,14 +41,14 @@
       <div class="dd-hero-body">
         <div class="header-text">
           <div class="valor-total-label">Est. valor total</div>
-          <div class="valor-total-amount"><span class="balance-amount" data-hideable data-hero-amount>0.00</span><span class="balance-currency">USD</span><i class="ic ic-refresh"></i></div>
+          <div class="valor-total-amount"><span class="balance-amount" data-hideable data-hero-amount data-hero-wallet>0.00</span><span class="balance-currency">USD</span><i class="ic ic-refresh"></i></div>
           <div class="valor-total-updated" id="updatedTxt">Actualizado hace 1 min</div>
         </div>
-        <div class="dd-hero-actions"><div class="dd-action"><div class="circle primary"><i class="ic ic-h_plus2"></i></div>Depósito</div><div class="dd-action"><div class="circle ghost"><i class="ic ic-h_transfer2"></i></div>Transferir</div><div class="dd-action"><div class="circle ghost"><i class="ic ic-h_minus"></i></div>Retirar</div></div>
+        <div class="dd-hero-actions"><div class="dd-action"><div class="circle primary"><i class="ic ic-h_plus2"></i></div>Depósito</div><div class="dd-action" data-href="transfer.html"><div class="circle ghost"><i class="ic ic-h_transfer2"></i></div>Transferir</div><div class="dd-action"><div class="circle ghost"><i class="ic ic-h_minus"></i></div>Retirar</div></div>
       </div>
     </section>
 
-    <div class="pf-deposit">
+    <div class="pf-deposit" id="pfDeposit">
       <h3>Haz tu primer depósito</h3>
       <p>Deposite en cripto o en su moneda local, al instante.</p>
       <div class="pf-tiles">
@@ -55,7 +56,7 @@
       </div>
     </div>
 
-    <section class="dd-section">
+    <section class="dd-section" id="pfMethodsSec">
       <div class="section-title" style="margin-bottom:0.875rem">Explorar todos los métodos de pago</div>
       <div class="pf-methods">
         <div class="pf-method"><i class="ic ic-pm_usd"></i><div><b>USD</b><span>Financiar a través de banco, tarjeta, billetera electrónica y criptografía.</span></div></div>
@@ -66,20 +67,36 @@
     </section>
 
     <section class="dd-section">
+      <div class="section-title title-lg" style="margin-bottom:0.75rem">Billetera</div>
+      <div class="pf-trade">
+        <div class="pf-row"><span class="l"><img src="assets/sim/img/v/cx_us.png" alt="">US Dollar</span><span class="r"><span data-hideable data-pf-wallet>0.00</span> USD</span></div>
+      </div>
+    </section>
+
+    <section class="dd-section">
       <div class="section-title title-lg" style="margin-bottom:0.75rem">Comercio</div>
       <div class="pf-trade">
-        <div class="pf-row"><span class="l"><img src="assets/sim/img/v/tr_options.png" alt="">Options</span><span class="r"><span data-hideable>0.00</span> USD</span></div>
-        <div class="pf-row"><span class="l"><img src="assets/sim/img/v/tr_tv.png" alt="">TradingView</span><span class="r"><span data-hideable>0.00</span> USD</span></div>
+        <div class="pf-row"><span class="l"><img src="assets/sim/img/v/tr_ctrader.png" alt=""><span class="nm">cTrader<small>1399343</small></span></span><span class="r"><span data-hideable>0.00</span> USD</span></div>
+        <div class="pf-row"><span class="l"><img src="assets/sim/img/v/tr_options.png" alt="">Options</span><span class="r"><span data-hideable data-pf-options>0.00</span> USD</span></div>
         <div class="pf-row"><span class="l"><img src="assets/sim/img/v/tr_mts.png" alt="">Standard</span><span class="r"><span data-hideable>0.00</span> USD</span></div>
-        <div class="pf-row"><span class="l"><img src="assets/sim/img/v/tr_dxn.png" alt="">Deriv Exchange</span><span class="r"><span data-hideable>0.00</span> USDT</span></div>
       </div>
-      <div class="pf-all"><button><i class="ic ic-pf_all"></i>Ver todas las transacciones</button></div>
+      <div class="pf-all"><button id="pfAllTx" data-href="transactions.html"><i class="ic ic-pf_all"></i>Ver todas las transacciones</button></div>
     </section>
 
   </main>
 </div>
 <div id="ddBottomNav"></div>
-<script src="assets/sim/js/deriv-shell.js?v=20261015p"></script>
+<script src="assets/sim/js/deriv-shell.js?v=20261017n"></script>
 
+<script src="assets/sim/js/withdraw.js?v=20261017n"></script>
+<script>(function(){
+  function paintPend(){
+    var funded=TradeLabSim.loadWallet().USD>0||TradeLabSim.loadTransactions().length>0;
+    document.getElementById('pfDeposit').hidden=funded;document.getElementById('pfMethodsSec').hidden=funded;
+  }
+  paintPend();window.addEventListener('tradelab-sim:balances-updated',paintPend);
+  var u=document.getElementById('updatedTxt');if(u)u.textContent='Actualizado ahora';
+})();</script>
+<script>document.addEventListener('click',function(e){var a=e.target.closest('[data-href]');if(a)location.href=a.getAttribute('data-href');});</script>
 </body>
 </html>

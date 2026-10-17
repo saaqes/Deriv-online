@@ -30,6 +30,7 @@
   var LOGO = ic('logo');
   var BELL = ic('bell');
   var SPARK = ic('amy');
+  var AMY_DESK = '<svg class="dd-amy-star" viewBox="0 0 26 24" width="20" height="19" aria-hidden="true"><path fill="#2d1b6b" d="M8.500 4.500Q9.600 10.400 15 12 9.600 13.600 8.500 19.500 7.400 13.600 2 12 7.400 10.400 8.500 4.500Z"/><path fill="#8b6b3d" d="M19.500 3.500Q20.200 6.500 23 7.200 20.200 7.900 19.500 11 18.800 7.900 16 7.200 18.800 6.500 19.500 3.500Z"/><path fill="#8b6b3d" d="M19.500 14Q20.100 16.700 22.500 17.300 20.100 17.900 19.500 20.600 18.900 17.900 16.500 17.300 18.900 16.700 19.500 14Z"/></svg>';
   var SEARCH = ic('search_amy');
   var CHEV = ic('chev_user');
 
@@ -52,7 +53,7 @@
         '</div>' +
         '<label class="dd-search">' + SEARCH + '<input type="text" placeholder="¿Qué tienes en mente?" aria-label="Buscar"></label>' +
         '<nav class="dd-nav">' + nav + '</nav>' +
-        '<div class="dd-amy" role="button">' + SPARK + '<span>Ask Amy</span></div>' +
+        '<div class="dd-amy" role="button">' + AMY_DESK + '<span>Ask Amy</span></div>' +
         '<div class="dd-spacer"></div>' +
         '<a class="dd-user" id="ddUser" href="profile.html">' +
           '<div class="dd-avatar" id="userAvatar" title=""><img src="assets/sim/img/v/avatar_side.png" alt=""></div>' +
@@ -178,7 +179,20 @@
         '<div class="dd-nt-menu" hidden><button data-nt="read">Marcar todo como leído</button></div></div>' +
       '<div class="dd-nt-body dd-nt-settings">' + settingsHTML() + '</div>' +
       '<div class="dd-nt-foot">Inbox by <svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor"><path d="M6 0l1.6 4.4L12 6 7.600 7.600 6 12 4.400 7.600 0 6l4.400-1.600z"/></svg> Novu</div>';
-    d._render = wireSettings(d);
+    var renderSettings = wireSettings(d);
+    // Correos "enviados" (simulados): aparecen 3 minutos después de solicitar un retiro.
+    var mailBox = document.createElement('div'); mailBox.className = 'dd-nt-mails';
+    d.querySelector('.dd-nt-settings').insertBefore(mailBox, d.querySelector('.dd-nt-settings').firstChild);
+    function renderMails() {
+      var T = window.TradeLabSim, list = [];
+      try { list = T.sentMails(); } catch (_) {}
+      mailBox.innerHTML = list.map(function (w) {
+        return '<div class="balance-manager-card dd-nt-mail"><span class="balance-manager-name">Correo enviado: retiro de ' + T.formatMoney(w.amount) + ' USD</span>' +
+          '<small>Enviamos la confirmación de tu solicitud a ' + esc(w.mail) + '.</small></div>';
+      }).join('');
+    }
+    d._render = function () { renderSettings(); renderMails(); };
+    renderMails();
     return d;
   }
 
@@ -272,7 +286,11 @@
       var acct = 'real';
       var paint = function () {
         var d = TradeLabSim.loadBalances();
-        var v = TradeLabSim.formatMoney(acct === 'demo' ? d.demo : d.virtual);
+        var tot = acct === 'demo' ? d.demo : d.virtual;
+        if (amt.hasAttribute('data-hero-wallet') && acct !== 'demo') tot += TradeLabSim.loadWallet().USD;
+        var v = TradeLabSim.formatMoney(tot);
+        document.querySelectorAll('[data-pf-options]').forEach(function (e) { e.dataset.value = TradeLabSim.formatMoney(d.virtual); if (!window.__ddHidden) e.textContent = e.dataset.value; });
+        document.querySelectorAll('[data-pf-wallet]').forEach(function (e) { e.dataset.value = TradeLabSim.formatMoney(TradeLabSim.loadWallet().USD); if (!window.__ddHidden) e.textContent = e.dataset.value; });
         amt.dataset.value = v;
         if (!window.__ddHidden) amt.textContent = v;
       };

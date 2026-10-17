@@ -140,7 +140,12 @@
       return { ok: false, reason: 'unknown-action' };
     }
 
+    var before = loadBalances()[account];
     saveBalances(data);
+    var delta = round2(data[account] - before);
+    if (account === 'virtual' && delta !== 0) {
+      addLedger(delta > 0 ? { type: 'deposit', amount: delta, to: 'options' } : { type: 'withdraw', amount: -delta, from: 'options' });
+    }
     return { ok: true, data: data };
   }
 
@@ -174,7 +179,125 @@
     }
   });
 
+  // ---- Historial de transacciones (Depósito / Retiro / Transferir) ----
+  var LEDGER_KEY = 'tradelab-sim-ledger';
+  var WD_DONE_MS = 3 * 60 * 1000; // un retiro "Procesando" pasa a "Completado" a los 3 min
+  function readLedger() {
+    try { var l = JSON.parse(localStorage.getItem(LEDGER_KEY) || '[]'); return Array.isArray(l) ? l : []; } catch (err) { return []; }
+  }
+  function addLedger(entry) {
+    var l = readLedger();
+    l.unshift(Object.assign({ id: String(Date.now()) + Math.floor(Math.random() * 1000), ts: Date.now(), status: 'Completado' }, entry));
+    try { localStorage.setItem(LEDGER_KEY, JSON.stringify(l.slice(0, 500))); } catch (err) { /* sin espacio */ }
+  }
+  /** Todas las transacciones (depósitos, retiros y transferencias), más recientes primero. */
+  function loadTransactions() {
+    var out = readLedger().slice();
+    loadWithdrawals().forEach(function (w) {
+      out.push({ id: 'wd' + w.id, type: 'withdraw', amount: w.amount, ts: w.ts, status: w.status });
+    });
+    out.sort(function (a, b) { return b.ts - a.ts; });
+    return out;
+  }
+
+  // ---- Billetera (wallet) USD del simulador ----
+  var WALLET_KEY = 'tradelab-sim-wallet';
+  function loadWallet() {
+    try {
+      var p = JSON.parse(localStorage.getItem(WALLET_KEY) || 'null');
+      if (p && typeof p.USD === 'number' && isFinite(p.USD) && p.USD >= 0) return { USD: round2(p.USD) };
+    } catch (err) { /* usa el valor por defecto */ }
+    return { USD: 0 };
+  }
+  function saveWallet(w) {
+    try {
+      localStorage.setItem(WALLET_KEY, JSON.stringify({ USD: round2(w.USD) }));
+      window.dispatchEvent(new CustomEvent('tradelab-sim:balances-updated', { detail: loadBalances() }));
+      return true;
+    } catch (err) { return false; }
+  }
+  /** Mueve saldo entre 'options' (Cuenta Real del simulador / gráfico) y 'usd' (Billetera). */
+  function transfer(from, to, amount) {
+    var amt = round2(Number(amount));
+    if (!isFinite(amt) || amt <= 0 || from === to) return { ok: false, reason: 'invalid' };
+    var ids = { options: 1, usd: 1 };
+    if (!ids[from] || !ids[to]) return { ok: false, reason: 'unsupported' };
+    var b = loadBalances(), w = loadWallet();
+    var src = from === 'options' ? b.virtual : w.USD;
+    if (amt > src + 1e-9) return { ok: false, reason: 'insufficient' };
+    if (from === 'options') { b.virtual = round2(b.virtual - amt); w.USD = round2(w.USD + amt); }
+    else { w.USD = round2(w.USD - amt); b.virtual = round2(b.virtual + amt); }
+    try { localStorage.setItem(WALLET_KEY, JSON.stringify(w)); } catch (err) { return { ok: false, reason: 'storage' }; }
+    saveBalances(b); // actualiza también la clave espejo que lee el gráfico (bot-app)
+    addLedger({ type: 'transfer', from: from, to: to, amount: amt });
+    return { ok: true, balances: b, wallet: w };
+  }
+
+  /** Cancela retiros pendientes: devuelve el dinero a la Billetera. */
+  function cancelWithdrawals(ids) {
+    var list = loadWithdrawals(), w = loadWallet(), n = 0;
+    list.forEach(function (r) {
+      if (ids.indexOf(r.id) >= 0 && r.status === 'Procesando') { r.status = 'Cancelado'; w.USD = round2(w.USD + r.amount); n++; }
+    });
+    if (!n) return 0;
+    try { localStorage.setItem(WD_KEY, JSON.stringify(list)); } catch (err) { return 0; }
+    saveWallet(w); return n;
+  }
+  /** Correos "enviados" (simulados): ya pasaron 3 minutos desde el retiro. */
+  function sentMails() {
+    var now = Date.now();
+    return loadWithdrawals().filter(function (r) { return r.mail && r.mailAt && now >= r.mailAt; });
+  }
+
+  /** Depósito simulado en la Billetera USD (también queda en el historial). */
+  function depositWallet(amount) {
+    var amt = round2(Number(amount)); if (!isFinite(amt) || amt <= 0) return false;
+    var w = loadWallet(); w.USD = round2(w.USD + amt);
+    if (!saveWallet(w)) return false;
+    addLedger({ type: 'deposit', amount: amt, to: 'usd' });
+    return true;
+  }
+
+  // ---- Retiros pendientes (simulados) ----
+  var WD_KEY = 'tradelab-sim-withdrawals';
+  function loadWithdrawals() {
+    try {
+      var l = JSON.parse(localStorage.getItem(WD_KEY) || '[]');
+      if (!Array.isArray(l)) return [];
+      var now = Date.now();
+      return l.map(function (w) {
+        return (w.status === 'Procesando' && now - w.ts > WD_DONE_MS) ? Object.assign({}, w, { status: 'Completado' }) : w;
+      });
+    } catch (err) { return []; }
+  }
+  function pendingTotal() {
+    return round2(loadWithdrawals().reduce(function (a, w) { return a + (w.status === 'Procesando' ? w.amount : 0); }, 0));
+  }
+  /** Solicita un retiro: descuenta de la Billetera y lo deja "Procesando". */
+  var MAIL_DELAY_MS = 3 * 60 * 1000; // el correo de confirmación "sale" 3 min después del retiro
+  function requestWithdrawal(amount, method, acct) {
+    var amt = round2(Number(amount)), w = loadWallet();
+    if (!isFinite(amt) || amt <= 0 || amt > w.USD + 1e-9) return { ok: false, reason: 'insufficient' };
+    var mail = ''; try { mail = localStorage.getItem('tl_user_email_custom') || localStorage.getItem('tl_user_email') || ''; } catch (err) { /* sin correo */ }
+    var rec = { id: String(Math.floor(1e7 + Math.random() * 9e7)), amount: amt, method: method || 'PSE', acct: acct || '', ts: Date.now(), status: 'Procesando', mail: mail, mailAt: Date.now() + MAIL_DELAY_MS };
+    var list = loadWithdrawals(); list.unshift(rec);
+    try { localStorage.setItem(WD_KEY, JSON.stringify(list)); } catch (err) { return { ok: false, reason: 'storage' }; }
+    w.USD = round2(w.USD - amt); saveWallet(w);
+    return { ok: true, record: rec };
+  }
+
   global.TradeLabSim = {
+    cancelWithdrawals: cancelWithdrawals,
+    sentMails: sentMails,
+    loadTransactions: loadTransactions,
+    addLedger: addLedger,
+    depositWallet: depositWallet,
+    loadWithdrawals: loadWithdrawals,
+    pendingTotal: pendingTotal,
+    requestWithdrawal: requestWithdrawal,
+    loadWallet: loadWallet,
+    saveWallet: saveWallet,
+    transfer: transfer,
     STORAGE_KEY: STORAGE_KEY,
     loadBalances: loadBalances,
     saveBalances: saveBalances,

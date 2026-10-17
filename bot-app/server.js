@@ -739,7 +739,14 @@ const server = http.createServer(async (req, res) => {
             '/dashboard/portfolio': '/portfolio.html',
             '/dashboard/profile': '/profile.html',
             '/dashboard/profile/personal-details': '/datos-personales.html',
+            '/dashboard/transfer': '/transfer.html',
+            '/dashboard/portfolio/transactions': '/transactions.html',
+            '/dashboard/withdraw/verify': '/withdraw-verify.html',
+            '/dashboard/withdraw/currency/USD': '/withdraw-currency.html',
         };
+        // Atajos: /usd (Billetera) -> Portafolio; cualquier /dashboard/... desconocido -> Home (en vez del 404 de React).
+        if (pathname === '/usd' || pathname === '/dashboard/usd' || pathname === '/dashboard/wallet') return redirect(res, '/dashboard/portfolio');
+        if (pathname.startsWith('/dashboard/') && !SCENE_ROUTES[pathname]) return redirect(res, '/dashboard/home');
         const target = safeJoin(DIST_DIR, SCENE_ROUTES[pathname] || (pathname === '/' ? '/index.html' : pathname));
         if (!target) {
             res.writeHead(400, SECURITY_HEADERS);
